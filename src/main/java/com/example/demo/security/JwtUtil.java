@@ -13,9 +13,19 @@ public class JwtUtil {
     private final Key key;
     private final long expiration;
     
-    public JwtUtil(@Value("${jwt.secret}") String secret, @Value("${jwt.expiration}") long expiration) {
+    public JwtUtil(@Value("${jwt.secret}") String secret,
+                   @Value("${jwt.expiration:86400000}") String expirationStr) {
         this.key = Keys.hmacShaKeyFor(Arrays.copyOf(secret.getBytes(), 32));
-        this.expiration = expiration;
+        long exp;
+        try {
+            String value = (expirationStr == null || expirationStr.isBlank())
+                    ? "86400000"
+                    : expirationStr;
+            exp = Long.parseLong(value);
+        } catch (NumberFormatException ex) {
+            exp = 86400000L;
+        }
+        this.expiration = exp;
     }
     
     public String generateToken(String email) {
