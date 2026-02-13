@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.HashMap;
+import org.springframework.http.ResponseEntity<?>;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,18 +41,28 @@ public class OrganizationController {
     }
 
     @PostMapping
-    public Map<String, Object> createOrganization(
+    public ResponseEntity<?> createOrganization(
             @RequestBody Map<String, String> body,
             HttpServletRequest request) {
         String email = getCurrentEmail(request);
-        Organization org = orgService.createOrganization(body.get("name"), email);
-        User admin = userRepo.findById(org.getAdminId()).orElse(null);
+        String name = body.get("name");
+        if (name == null || name.trim().isEmpty()) {
+            return org.springframework.http.ResponseEntity.badRequest()
+                    .body(Map.of("error", "Organization name is required"));
+        }
 
-        return Map.of(
-                "id", org.getId(),
-                "name", org.getName(),
-                "adminId", org.getAdminId(),
-                "adminEmail", admin != null ? admin.getEmail() : "");
+        try {
+            Organization org = orgService.createOrganization(name, email);
+            User admin = userRepo.findById(org.getAdminId()).orElse(null);
+
+            return ResponseEntity.ok(Map.of(
+                    "id", org.getId(),
+                    "name", org.getName(),
+                    "adminId", org.getAdminId(),
+                    "adminEmail", admin != null ? admin.getEmail() : ""));
+        } catch (RuntimeException e) {
+            return org.springframework.http.ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PostMapping("/{id}/invite")
