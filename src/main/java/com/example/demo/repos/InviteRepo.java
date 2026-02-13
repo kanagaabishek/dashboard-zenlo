@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface InviteRepo extends JpaRepository<Invitation, Long> {
     List<Invitation> findByEmailAndStatus(String email, String status);
-    String findUserIdByEmail(String email);
+
 }
