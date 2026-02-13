@@ -13,24 +13,19 @@ import java.io.IOException;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-    
+
     private final JwtUtil jwtUtil;
-    
+
     public JwtFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
-    
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) 
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        // Skip CORS preflight requests
-        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-            chain.doFilter(request, response);
-            return;
-        }
-        
+
         String auth = request.getHeader("Authorization");
-        
+
         if (auth != null && auth.startsWith("Bearer ")) {
             String token = auth.substring(7);
             try {
@@ -41,15 +36,15 @@ public class JwtFilter extends OncePerRequestFilter {
                             .password("")
                             .authorities("USER")
                             .build();
-                    
-                    UsernamePasswordAuthenticationToken authentication = 
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             } catch (Exception ignored) {
             }
         }
-        
+
         chain.doFilter(request, response);
     }
 }

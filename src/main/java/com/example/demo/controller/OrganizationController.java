@@ -16,21 +16,21 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/orgs")
-@CrossOrigin(origins = "*")
+
 public class OrganizationController {
-    
+
     private final OrganizationService orgService;
     private final UserRepo userRepo;
     private final OrgRepo orgRepo;
     private final JwtUtil jwtUtil;
-    
+
     public OrganizationController(OrganizationService orgService, UserRepo userRepo, OrgRepo orgRepo, JwtUtil jwtUtil) {
         this.orgService = orgService;
         this.userRepo = userRepo;
         this.orgRepo = orgRepo;
         this.jwtUtil = jwtUtil;
     }
-    
+
     private String getCurrentEmail(HttpServletRequest request) {
         String auth = request.getHeader("Authorization");
         if (auth != null && auth.startsWith("Bearer ")) {
@@ -38,7 +38,7 @@ public class OrganizationController {
         }
         throw new RuntimeException("Unauthorized");
     }
-    
+
     @PostMapping
     public Map<String, Object> createOrganization(
             @RequestBody Map<String, String> body,
@@ -46,15 +46,14 @@ public class OrganizationController {
         String email = getCurrentEmail(request);
         Organization org = orgService.createOrganization(body.get("name"), email);
         User admin = userRepo.findById(org.getAdminId()).orElse(null);
-        
+
         return Map.of(
-            "id", org.getId(),
-            "name", org.getName(),
-            "adminId", org.getAdminId(),
-            "adminEmail", admin != null ? admin.getEmail() : ""
-        );
+                "id", org.getId(),
+                "name", org.getName(),
+                "adminId", org.getAdminId(),
+                "adminEmail", admin != null ? admin.getEmail() : "");
     }
-    
+
     @PostMapping("/{id}/invite")
     public Map<String, Object> inviteUser(
             @PathVariable Long id,
@@ -62,15 +61,14 @@ public class OrganizationController {
             HttpServletRequest request) {
         String email = getCurrentEmail(request);
         Invitation invite = orgService.inviteUser(id, body.get("email"), email);
-        
+
         return Map.of(
-            "id", invite.getId(),
-            "email", invite.getEmail(),
-            "organizationId", invite.getOrganizationId(),
-            "status", invite.getStatus()
-        );
+                "id", invite.getId(),
+                "email", invite.getEmail(),
+                "organizationId", invite.getOrganizationId(),
+                "status", invite.getStatus());
     }
-    
+
     @GetMapping("/{id}/members")
     public List<Map<String, Object>> getMembers(@PathVariable Long id) {
         return orgService.getOrganizationMembers(id).stream()
