@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.HashMap;
-import org.springframework.http.ResponseEntity<?>;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,7 +47,7 @@ public class OrganizationController {
         String email = getCurrentEmail(request);
         String name = body.get("name");
         if (name == null || name.trim().isEmpty()) {
-            return org.springframework.http.ResponseEntity.badRequest()
+            return ResponseEntity.badRequest()
                     .body(Map.of("error", "Organization name is required"));
         }
 
